@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<a class="back-link" href="{{ back.url }}">{{ back.label }}</a>
+<header class="page-heading"><div><p class="eyebrow">{{ submission.ma_lop_code }} · {{ submission.ngon_ngu }}</p><h1>{{ title }}</h1><p>{{ submission.tieu_de }} · {{ submission.ho_ten }}</p></div><div class="button-row">
+{% if can_grade %}<a class="button button-primary" href="{% url 'grade' submission.ma_lan_nop %}">Chấm giả lập</a>{% endif %}
+{% if can_comment %}<a class="button button-secondary" href="{% url 'comment' submission.ma_lan_nop %}">Viết nhận xét</a>{% endif %}
+</div></header>
+<div class="stack">
+  <section class="panel detail-strip">
+    <div><span>Trạng thái</span><strong class="status status-{{ outcome.color }}">{{ outcome.label }}</strong></div>
+    <div><span>Điểm</span><strong>{{ score }}</strong></div>
+    <div><span>Đã nộp</span><strong>{{ submission.thoi_diem_nop|date:"d/m/Y H:i" }}</strong></div>
+  </section>
+  <section class="panel article-body"><h2>Mã nguồn</h2><pre class="code-block"><code>{{ submission.ma_nguon }}</code></pre></section>
+  {% include "partials/table.html" %}
+  {% if reviews %}
+    <section class="panel course-panel"><div class="panel-heading"><h2>Nhận xét giảng viên</h2></div>
+    {% for review in reviews %}<article class="notice-item"><h3>{{ review.ho_ten }}{% if review.dong_code %} <small>Dòng {{ review.dong_code }}</small>{% endif %}</h3><p>{{ review.noi_dung|linebreaksbr }}</p><span class="muted">{{ review.thoi_diem|date:"d/m/Y H:i" }}</span></article>{% endfor %}</section>
+  {% endif %}
+</div>
+{% endblock %}

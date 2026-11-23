@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="page-heading"><div><h1>{{ title }}</h1><p>Kết quả theo từng lớp bạn đã đăng ký.</p></div><a class="button button-primary" href="{% url 'classes' %}">Xem lớp học</a></header>
+<div class="stack">
+  {% for record in records %}
+  <section class="panel progress-card">
+    <div class="panel-heading"><div><p class="eyebrow">{{ record.ma_code }}</p><h2><a href="{% url 'class_detail' record.ma_lop %}">{{ record.ten_khoa_hoc }}</a></h2></div></div>
+    <div class="detail-strip">
+      <div><span>Thực hành</span><strong>{{ record.practice }}</strong><small>{{ record.so_da_dat }} / {{ record.tong_bat_buoc }} bài bắt buộc</small></div>
+      <div><span>Lý thuyết</span><strong>{{ record.theory }}</strong></div>
+      <div><span>Chuyên cần</span><strong>{{ record.attendance }}</strong></div>
+      <div><span>Còn nợ</span><strong>{{ record.debt }}</strong></div>
+    </div>
+    <div class="progress-actions button-row">
+      <a class="button button-secondary" href="{% url 'payment' record.ma_dang_ky %}">Thanh toán</a>
+      {% if record.can_review %}<a class="button button-secondary" href="{% url 'review' record.ma_dang_ky %}">Đánh giá lớp</a>{% endif %}
+      {% if record.so_sao %}<span class="status status-neutral">Đã đánh giá {{ record.so_sao }}/5</span>{% endif %}
+      {% if record.so_hieu %}<span class="status status-success">Chứng chỉ {{ record.so_hieu }} · {{ record.ngay_cap|date:"d/m/Y" }}</span>{% endif %}
+    </div>
+  </section>
+  {% empty %}<div class="notice">Bạn chưa đăng ký lớp nào.</div>{% endfor %}
+</div>
+{% endblock %}

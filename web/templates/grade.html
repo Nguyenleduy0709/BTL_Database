@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<a class="back-link" href="{% url 'submission' submission.ma_lan_nop %}">Về lần nộp</a>
+<header class="page-heading"><div><h1>{{ title }}</h1><p>Chọn kết quả cho từng test của {{ submission.ho_ten }}.</p></div></header>
+<div class="stack">
+  {% include "partials/table.html" %}
+  {% if can_grade or form.errors %}
+  <form method="post" class="panel form-panel">{% csrf_token %}
+    {% include "partials/form_fields.html" %}
+    <div class="button-row">
+      <button class="button button-primary" type="submit" name="mode" value="manual">Lưu kết quả</button>
+      <button class="button button-secondary" type="submit" name="mode" value="random" formnovalidate>Chấm ngẫu nhiên</button>
+      <button class="button button-secondary" type="submit" name="mode" value="compile" formnovalidate>Lỗi biên dịch</button>
+    </div>
+  </form>
+  {% else %}<div class="notice">Lần nộp này đã có kết quả.</div>{% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<a class="back-link" href="{{ back.url }}">{{ back.label }}</a>
+<header class="page-heading"><div><h1>{{ title }}</h1>{% if description %}<p>{{ description }}</p>{% endif %}</div></header>
+<form class="panel form-panel" method="post">
+  {% csrf_token %}
+  {% include "partials/form_fields.html" %}
+  <div class="button-row"><button class="button button-primary" type="submit">{{ submit }}</button><a class="button button-secondary" href="{{ back.url }}">Quay lại</a></div>
+</form>
+{% if tables %}<div class="stack form-tables">{% for grid in tables %}{% include "partials/table.html" %}{% endfor %}</div>{% endif %}
+{% endblock %}

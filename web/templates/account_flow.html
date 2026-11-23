@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block guest_content %}
+<div class="login-layout">
+  <section class="login-aside">
+    <a class="brand" href="{% url 'courses' %}"><span class="brand-mark" aria-hidden="true">&lt;/&gt;</span><span>CodeLab<small>Quản lý đào tạo</small></span></a>
+    <div class="login-aside-main">
+      <h1>Học lập trình qua thực hành</h1>
+      <p>Đọc bài, luyện tập và theo dõi tiến độ học của bạn trên CodeLab.</p>
+      <a class="button button-secondary" href="{% url 'courses' %}">Khám phá khóa học</a>
+    </div>
+  </section>
+  <section class="login-main">
+    <div class="login-form">
+      {% include "partials/messages.html" %}
+      <h2>{{ title }}</h2>
+      <p class="subtle">{{ description }}</p>
+      <form method="post">
+        {% csrf_token %}
+        {% include "partials/form_fields.html" %}
+        <button class="button button-primary login-button" type="submit">{{ submit }}</button>
+      </form>
+      {% if resend_route %}
+        <p class="otp-hint">Bạn có thể yêu cầu mã mới sau {{ resend_seconds }} giây.</p>
+        <div class="account-links">
+          <form method="post" action="{% url resend_route %}">{% csrf_token %}<button class="button button-secondary" type="submit">Gửi lại mã</button></form>
+          <a href="{% url start_route %}">Dùng email khác</a>
+        </div>
+      {% endif %}
+      <div class="account-links"><a href="{% url 'login' %}">Về trang đăng nhập</a></div>
+    </div>
+  </section>
+</div>
+{% endblock %}

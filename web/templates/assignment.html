@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load static %}
+{% block head %}<script src="{% static 'vendor/chart.umd.js' %}" defer></script><script src="{% static 'charts.js' %}" defer></script>{% endblock %}
+{% block content %}
+<a class="back-link" href="{% url 'class_detail' assignment.ma_lop %}">Về lớp {{ assignment.ma_lop_code }}</a>
+<header class="page-heading"><div><p class="eyebrow">{{ assignment.ma_lop_code }} · Phiên bản {{ assignment.phien_ban }}</p><h1>{{ title }}</h1><p>Hạn nộp {{ assignment.han_nop|date:"d/m/Y H:i" }}{% if pending %} · {{ pending }} học viên đang chờ kết quả đầu tiên{% endif %}</p></div><a class="button button-secondary" href="{% url 'class_report' assignment.ma_lop %}">Bảng điểm lớp</a></header>
+{% include "partials/metrics.html" %}
+<div class="stack">
+  {% include "partials/table.html" %}
+  <section class="panel activity-panel" id="loi-pho-bien">
+    <div class="panel-heading"><div><h2>Lỗi ở lượt chấm gần nhất</h2><p>Mỗi học viên đóng góp tối đa một kết quả cho từng test.</p></div></div>
+    {% if errors %}
+    <div class="chart-wrap errors-chart"><canvas id="errors-chart" role="img" aria-label="Số học viên sai theo test"></canvas></div>
+    {{ errors|json_script:"errors-data" }}
+    <div class="table-responsive"><table class="data-table"><thead><tr><th>Test</th><th>Mô tả</th><th>Người có kết quả</th><th>Người sai</th></tr></thead><tbody>
+    {% for error in errors %}<tr><td>{{ error.thu_tu }}</td><td>{{ error.mo_ta }}</td><td>{{ error.so_nguoi_co_ket_qua }}</td><td>{{ error.so_nguoi_sai }}</td></tr>{% endfor %}
+    </tbody></table></div>
+    {% else %}<p class="empty">Bài giao chưa có bộ test.</p>{% endif %}
+  </section>
+</div>
+{% endblock %}

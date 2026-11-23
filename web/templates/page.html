@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="page-heading">
+  <div>{% if intro %}<p class="eyebrow">{{ intro }}</p>{% endif %}<h1>{{ title }}</h1>{% if description %}<p>{{ description }}</p>{% endif %}</div>
+  {% if actions %}<div class="button-row">{% for item in actions %}<a class="button {% if forloop.first %}button-primary{% else %}button-secondary{% endif %}" href="{{ item.url }}">{{ item.label }}</a>{% endfor %}</div>{% endif %}
+</header>
+{% if notice %}<div class="notice">{{ notice }}</div>{% endif %}
+<div class="stack">{% for grid in tables %}{% include "partials/table.html" %}{% endfor %}</div>
+{% endblock %}

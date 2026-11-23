@@ -1,0 +1,72 @@
+{% load static %}
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title }} · CodeLab</title>
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'app.css' %}">
+  {% block head %}{% endblock %}
+</head>
+<body class="{% if not request.actor %}guest{% endif %}">
+{% if request.actor or public_catalog %}
+<a href="#main-content" class="skip-link">Đến nội dung chính</a>
+<div class="app-layout{% if not request.actor %} app-layout-public{% endif %}">
+  {% if request.actor %}
+  <aside class="sidebar">
+    <a class="brand" href="{% url 'dashboard' %}"><span class="brand-mark" aria-hidden="true">&lt;/&gt;</span><span>CodeLab<small>Quản lý đào tạo</small></span></a>
+    <nav class="navigation" aria-label="Điều hướng chính">
+      <a class="{% if section == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}"><span aria-hidden="true">▦</span>Tổng quan</a>
+      <a class="{% if section == 'courses' %}active{% endif %}" href="{% url 'courses' %}"><span aria-hidden="true">▤</span>Khóa học</a>
+      <a class="{% if section == 'classes' %}active{% endif %}" href="{% url 'classes' %}"><span aria-hidden="true">◫</span>Lớp học</a>
+      {% if 'HOC_VIEN' in request.actor.roles %}
+      <a class="{% if section == 'progress' %}active{% endif %}" href="{% url 'progress' %}"><span aria-hidden="true">◴</span>Tiến độ của tôi</a>
+      {% endif %}
+      {% if 'ADMIN' in request.actor.roles or 'GIANG_VIEN' in request.actor.roles %}
+      <a class="{% if section == 'exercises' %}active{% endif %}" href="{% url 'exercises' %}"><span aria-hidden="true">⌘</span>Ngân hàng bài tập</a>
+      <a class="{% if section == 'queue' %}active{% endif %}" href="{% url 'queue' %}"><span aria-hidden="true">☷</span>Chờ chấm</a>
+      {% endif %}
+      {% if 'ADMIN' in request.actor.roles %}
+      <div class="nav-divider"></div>
+      <a class="{% if section == 'users' %}active{% endif %}" href="{% url 'users' %}"><span aria-hidden="true">♙</span>Người dùng</a>
+      <a class="{% if section == 'finance' %}active{% endif %}" href="{% url 'finance' %}"><span aria-hidden="true">₫</span>Học phí &amp; chứng chỉ</a>
+      <a class="{% if section == 'audit' %}active{% endif %}" href="{% url 'audit' %}"><span aria-hidden="true">◷</span>Nhật ký hệ thống</a>
+      {% endif %}
+    </nav>
+  </aside>
+  {% endif %}
+  <div class="app-body">
+    {% if request.actor %}
+    <header class="topbar">
+      <span class="workspace-name">Trung tâm đào tạo lập trình</span>
+      <div class="topbar-actions">
+        <div class="user-chip">
+          <span class="user-avatar" aria-hidden="true">{{ request.actor.ho_ten|slice:":1" }}</span>
+          <div><strong>{{ request.actor.ho_ten }}</strong><small>{% if 'ADMIN' in request.actor.roles %}Quản trị viên{% elif 'GIANG_VIEN' in request.actor.roles %}Giảng viên{% else %}Học viên{% endif %}</small></div>
+        </div>
+        <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="button button-small button-text" type="submit">Đăng xuất</button></form>
+      </div>
+    </header>
+    {% else %}
+    <header class="topbar public-topbar">
+      <a class="brand" href="{% url 'courses' %}"><span class="brand-mark" aria-hidden="true">&lt;/&gt;</span>CodeLab</a>
+      <nav class="button-row" aria-label="Điều hướng chính">
+        <a href="{% url 'courses' %}">Khóa học</a>
+        <a class="button button-primary" href="{% url 'login' %}?next={{ request.path|urlencode }}">Đăng nhập</a>
+      </nav>
+    </header>
+    {% endif %}
+    <main id="main-content" class="content">
+      {% include "partials/messages.html" %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+{% else %}
+  <main id="main-content">
+    {% block guest_content %}{% endblock %}
+  </main>
+{% endif %}
+</body>
+</html>

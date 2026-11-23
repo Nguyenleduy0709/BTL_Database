@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load static %}
+{% block head %}<link rel="stylesheet" href="{% static 'learning.css' %}">{% endblock %}
+{% block content %}
+<header class="learning-hero catalog-hero">
+  <div><h1>Khóa học</h1><p>Khám phá nội dung, học thử một bài hoặc tiếp tục khóa bạn đã đăng ký.</p></div>
+  {% if can_edit %}<a class="button button-secondary" href="{% url 'new_course' %}">Tạo khóa học</a>{% endif %}
+</header>
+<form method="get" class="catalog-filter" aria-label="Lọc khóa học">
+  <div class="filter-search">
+    <label for="course-search">Tìm khóa học</label>
+    <input type="search" id="course-search" name="q" maxlength="120" value="{{ search }}" placeholder="Tên khóa học hoặc danh mục">
+  </div>
+  <div>
+    <label for="course-level">Trình độ</label>
+    <select id="course-level" name="trinh_do">
+      <option value="">Tất cả</option>
+      {% for value, label in levels %}<option value="{{ value }}"{% if value == level %} selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+  </div>
+  <button class="button button-primary" type="submit">Tìm kiếm</button>
+  {% if search or level %}<a class="button button-secondary" href="{% url 'courses' %}">Xóa bộ lọc</a>{% endif %}
+</form>
+{% if courses %}
+<ul class="course-grid">
+  {% for course in courses %}
+  <li class="panel course-card{% if course.ma_code == 'SQL-CB' %} course-card-teal{% endif %}">
+    <div class="course-card-cap">
+      <p>{{ course.ten_danh_muc }}</p>
+      <h2><a href="{% url 'course_detail' course.ma_khoa_hoc %}">{{ course.ten_khoa_hoc }}</a></h2>
+    </div>
+    <div class="course-card-body">
+      <div class="button-row">
+        <span class="status status-neutral">{{ course.level_name }}</span>
+        {% if course.da_dang_ky %}<span class="status status-success">Đã đăng ký</span>{% endif %}
+        {% if can_edit %}<span class="status status-neutral">{{ course.state_name }}</span>{% endif %}
+      </div>
+      <p>{{ course.mo_ta|default_if_none:""|truncatechars:200 }}</p>
+      <div class="course-card-meta">
+        <span>{{ course.so_chuong }} chương</span>
+        <span>{{ course.so_bai }} bài học</span>
+        <span>{{ course.so_phut }} phút</span>
+      </div>
+      <a class="button button-secondary" href="{% url 'course_detail' course.ma_khoa_hoc %}">
+        {% if course.da_dang_ky %}Vào khóa học{% else %}Xem khóa học{% endif %}
+      </a>
+    </div>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<section class="panel learning-empty"><h2>{% if search or level %}Không tìm thấy khóa học phù hợp{% else %}Chưa có khóa học{% endif %}</h2>
+{% if search or level %}<p>Thử tên khóa, danh mục hoặc trình độ khác.</p>{% endif %}</section>
+{% endif %}
+{% endblock %}

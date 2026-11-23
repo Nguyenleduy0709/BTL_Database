@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% load static %}
+{% block head %}<link rel="stylesheet" href="{% static 'learning.css' %}">{% endblock %}
+{% block content %}
+<a class="back-link" href="{% url 'course_detail' lesson.ma_khoa_hoc %}">{{ lesson.ten_khoa_hoc }}</a>
+<header class="page-heading">
+  <div><p class="eyebrow">{{ lesson.ten_chuong }}{% if not class_id %} · Xem nội dung{% endif %}</p><h1>{{ title }}</h1><p>{{ lesson.thoi_luong_phut }} phút{% if class_id %} · {{ lesson.ma_code }}{% endif %}</p></div>
+  {% if lesson.thoi_diem_hoan_thanh %}<span class="status status-success">Đã hoàn thành</span>{% endif %}
+</header>
+<div class="reader-layout{% if not chapters %} reader-preview{% endif %}">
+  <div class="stack">
+    <article class="panel article-body reading-content">
+      {% for kind, content in blocks %}
+        {% if kind == 'heading' %}<h2>{{ content }}</h2>
+        {% elif kind == 'code' %}<pre class="code-block"><code>{{ content }}</code></pre>
+        {% else %}{{ content|linebreaks }}{% endif %}
+      {% empty %}<p>Nội dung bài học đang được cập nhật.</p>{% endfor %}
+    </article>
+    {% if class_id %}
+    <div class="panel reader-actions">
+      {% if not lesson.thoi_diem_hoan_thanh %}
+      <form method="post" action="{% url 'complete_lesson' class_id lesson.ma_bai_hoc %}">
+        {% csrf_token %}<button class="button button-primary" type="submit">Đánh dấu hoàn thành</button>
+      </form>
+      {% endif %}
+      <nav class="button-row" aria-label="Chuyển bài">
+        {% if previous_id %}<a class="button button-secondary" href="{% url 'lesson' class_id previous_id %}">Bài trước</a>{% endif %}
+        {% if next_id %}<a class="button button-secondary" href="{% url 'lesson' class_id next_id %}">Bài tiếp theo</a>{% endif %}
+        <a class="button button-secondary" href="{% url 'class_detail' class_id %}">Về lớp học</a>
+      </nav>
+    </div>
+    {% else %}
+    <div class="reader-actions">
+      <a class="button button-primary" href="{% url 'course_detail' lesson.ma_khoa_hoc %}">Xem toàn bộ khóa học</a>
+    </div>
+    {% endif %}
+  </div>
+  {% if chapters %}
+  <nav class="panel reader-outline" aria-label="Nội dung khóa học">
+    <h2>Nội dung khóa học</h2>
+    {% for chapter in chapters %}
+    {% if chapter.lessons %}
+    <h3>{{ chapter.ten_chuong }}</h3>
+    <ol>
+      {% for item in chapter.lessons %}
+      <li><a href="{% url 'lesson' class_id item.ma_bai_hoc %}"{% if item.ma_bai_hoc == lesson.ma_bai_hoc %} aria-current="page"{% endif %}>
+        {{ item.tieu_de }}{% if item.thoi_diem_hoan_thanh %}<span>Đã học</span>{% endif %}
+      </a></li>
+      {% endfor %}
+    </ol>
+    {% endif %}
+    {% endfor %}
+  </nav>
+  {% endif %}
+</div>
+{% endblock %}

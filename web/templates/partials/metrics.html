@@ -1,0 +1,5 @@
+<div class="metric-grid">
+{% for label,value,mark in metrics %}
+<div class="metric"><span class="metric-mark" aria-hidden="true">{{ mark }}</span><strong>{{ value }}</strong><span>{{ label }}</span></div>
+{% endfor %}
+</div>

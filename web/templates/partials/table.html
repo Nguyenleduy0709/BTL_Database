@@ -1,0 +1,15 @@
+<section class="panel table-panel">
+  <div class="panel-heading"><h2>{{ grid.title }}</h2>{% if grid.rows %}<span class="muted">{{ grid.rows|length }} dòng</span>{% endif %}</div>
+  {% if grid.rows %}
+  <div class="table-responsive">
+    <table class="data-table" aria-label="{{ grid.title }}">
+      <thead><tr>{% for header in grid.headers %}<th scope="col">{{ header }}</th>{% endfor %}</tr></thead>
+      <tbody>
+        {% for row in grid.rows %}
+        <tr>{% for cell in row %}<td>{% if cell.url %}<a href="{{ cell.url }}">{{ cell.label }}</a>{% elif cell.color %}<span class="status status-{{ cell.color }}">{{ cell.label }}</span>{% else %}{{ cell }}{% endif %}</td>{% endfor %}</tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}<p class="empty">{{ grid.empty }}</p>{% endif %}
+</section>

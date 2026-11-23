@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<a class="back-link" href="{% url 'class_detail' assignment.ma_lop %}">Về lớp {{ assignment.ma_lop_code }}</a>
+<header class="page-heading"><div><p class="eyebrow">{{ assignment.ma_bai }} · v{{ assignment.phien_ban }}</p><h1>{{ title }}</h1><p>Hạn nộp {{ assignment.han_nop|date:"d/m/Y H:i" }} · Đã nộp {{ assignment.da_nop }}{% if assignment.so_lan_nop_toi_da %}/{{ assignment.so_lan_nop_toi_da }}{% endif %} lượt</p></div></header>
+<div class="stack">
+  <article class="panel article-body"><h2>Đề bài</h2>{{ assignment.de_bai|linebreaks }}
+  {% if examples %}<h3>Test mẫu</h3><div class="example-grid">{% for example in examples %}<div><h4>{{ example.mo_ta }}</h4><p>Đầu vào <code>{{ example.du_lieu_vao }}</code></p><p>Kết quả <code>{{ example.ket_qua_mong_doi }}</code></p></div>{% endfor %}</div>{% endif %}</article>
+  {% if can_submit or form.errors %}
+  <form method="post" class="panel form-panel">{% csrf_token %}<h2>Nộp bài</h2>{% include "partials/form_fields.html" %}<button class="button button-primary" type="submit">Gửi bài</button></form>
+  {% else %}<div class="notice">Bài giao hiện không nhận thêm lượt nộp từ tài khoản này.</div>{% endif %}
+  {% include "partials/table.html" %}
+</div>
+{% endblock %}

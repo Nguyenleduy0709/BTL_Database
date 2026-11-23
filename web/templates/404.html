@@ -1,0 +1,3 @@
+{% extends "base.html" %}
+{% block content %}<header class="page-heading"><div><h1>Không tìm thấy trang</h1><p>Đường dẫn hoặc bản ghi đã thay đổi.</p></div><a class="button button-secondary" href="{% url 'dashboard' %}">Về tổng quan</a></header>{% endblock %}
+{% block guest_content %}<div class="simple-error"><h1>Không tìm thấy trang</h1><a href="{% url 'login' %}">Đăng nhập</a></div>{% endblock %}

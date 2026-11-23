@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load static %}
+{% block head %}<script src="{% static 'vendor/chart.umd.js' %}" defer></script><script src="{% static 'charts.js' %}" defer></script>{% endblock %}
+{% block content %}
+<header class="page-heading">
+  <div><h1>Tổng quan</h1><p>Chào {{ request.actor.ho_ten }}. {% if student %}Xem các lớp và bài thực hành của bạn.{% else %}Theo dõi lớp học và kết quả thực hành.{% endif %}</p></div>
+  {% if student %}<a class="button button-primary" href="{% url 'courses' %}">Khám phá khóa học</a>
+  {% else %}<a class="button button-primary" href="{% url 'classes' %}">Xem lớp học</a>{% endif %}
+</header>
+{% include "partials/metrics.html" %}
+{% if not student %}
+<div class="dashboard-grid">
+  <section class="panel activity-panel">
+    <div class="panel-heading"><div><h2>Lượt nộp theo ngày</h2><p>7 ngày gần nhất</p></div><strong class="chart-total">{{ activity_total }} lượt</strong></div>
+    <div class="chart-wrap"><canvas id="activity-chart" role="img" aria-label="Số lượt nộp trong bảy ngày gần nhất"></canvas></div>
+    {{ activity|json_script:"activity-data" }}
+  </section>
+</div>
+{% endif %}
+{% include "partials/table.html" %}
+{% endblock %}

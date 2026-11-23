@@ -1,0 +1,28 @@
+services:
+  mysql:
+    image: mysql:8.0.46
+    command:
+      - --default-time-zone=+07:00
+      - --log-bin-trust-function-creators=ON
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Run scripts/configure_local.py}
+      DB_PASSWORD: ${DB_PASSWORD:?Run scripts/configure_local.py}
+      DB_READ_PASSWORD: ${DB_READ_PASSWORD:?Run scripts/configure_local.py}
+      CODELAB_DEMO_PASSWORD_HASH: ${CODELAB_DEMO_PASSWORD_HASH:?Run scripts/configure_local.py}
+    ports:
+      - "127.0.0.1:${DB_PORT:-33317}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database:/opt/codelab/database:ro
+      - ./scripts/docker_init.sh:/docker-entrypoint-initdb.d/10-codelab.sh:ro
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          MYSQL_PWD="$${DB_PASSWORD}" mysql --protocol=TCP -h127.0.0.1 -uapp_web -N -e 'SELECT COUNT(*) FROM btlcsdl.v_lop_hoc'
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+volumes:
+  mysql_data:

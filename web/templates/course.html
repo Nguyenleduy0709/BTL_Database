@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% load static %}
+{% block head %}<link rel="stylesheet" href="{% static 'learning.css' %}">{% endblock %}
+{% block content %}
+<a class="back-link" href="{% url 'courses' %}">Tất cả khóa học</a>
+<header class="learning-hero course-hero">
+  <div class="course-hero-copy">
+    <p class="learning-category">{{ course.ten_danh_muc }} <span aria-hidden="true">·</span> {{ level_name }}</p>
+    <h1>{{ title }}</h1>
+    {% if course.mo_ta %}<p>{{ course.mo_ta|linebreaksbr }}</p>{% endif %}
+    <div class="course-hero-meta"><span>{{ chapters|length }} chương</span><span>{{ lesson_count }} bài học</span><span>{{ minutes }} phút</span></div>
+  </div>
+  {% if next_lesson and group %}
+    <a class="button button-secondary" href="{% url 'lesson' group.ma_lop next_lesson.ma_bai_hoc %}">
+      {% if completed == lesson_count %}Ôn lại bài học{% elif completed %}Học tiếp{% else %}Bắt đầu học{% endif %}
+    </a>
+  {% else %}
+    <div class="button-row">
+      {% if first_lesson %}<a class="button button-secondary" href="{% url 'lesson_preview' course.ma_khoa_hoc first_lesson.ma_bai_hoc %}">Học thử</a>{% endif %}
+      {% if open_groups %}<a class="button button-hero-outline" href="#lop-mo">Xem lớp đang mở</a>{% endif %}
+    </div>
+  {% endif %}
+</header>
+{% if can_edit %}
+<div class="button-row context-actions">
+  <a class="button button-primary" href="{% url 'new_chapter' course.ma_khoa_hoc %}">Thêm chương</a>
+  <a class="button button-secondary" href="{% url 'edit_course' course.ma_khoa_hoc %}">Sửa khóa</a>
+  <a class="button button-secondary" href="{% url 'delete_content' 'course' course.ma_khoa_hoc %}">Xóa khóa</a>
+</div>
+{% endif %}
+<div class="course-layout">
+  <section class="stack curriculum" aria-labelledby="curriculum-title" id="noi-dung">
+    <h2 id="curriculum-title">Nội dung khóa học</h2>
+    {% for chapter in chapters %}
+    <article class="panel course-panel">
+      <div class="panel-heading chapter-heading">
+        <div><p>Chương {{ chapter.thu_tu }}</p><h3>{{ chapter.ten_chuong }}</h3></div>
+        {% if can_edit %}<div class="button-row course-edit-links"><a href="{% url 'new_lesson' chapter.ma_chuong %}">Thêm bài</a><a href="{% url 'edit_chapter' course.ma_khoa_hoc chapter.ma_chuong %}">Sửa</a><a href="{% url 'delete_content' 'chapter' chapter.ma_chuong %}">Xóa</a></div>{% endif %}
+      </div>
+      <ol class="lesson-list course-lesson-list">
+        {% for lesson in chapter.lessons %}
+        <li>
+          <div>
+            {% if group %}<a href="{% url 'lesson' group.ma_lop lesson.ma_bai_hoc %}">{{ lesson.tieu_de }}</a>
+            {% elif can_edit or lesson.ma_bai_hoc == first_lesson.ma_bai_hoc %}<a href="{% url 'lesson_preview' course.ma_khoa_hoc lesson.ma_bai_hoc %}">{{ lesson.tieu_de }}</a>
+            {% else %}<span>{{ lesson.tieu_de }}</span>{% endif %}
+          </div>
+          <div class="button-row lesson-meta">
+            {% if lesson.thoi_diem_hoan_thanh %}<span class="status status-success">Đã học</span>
+            {% elif not group and lesson.ma_bai_hoc == first_lesson.ma_bai_hoc %}<span class="status status-neutral">Học thử</span>{% endif %}
+            <span>{{ lesson.thoi_luong_phut }} phút</span>
+            {% if can_edit %}<a href="{% url 'edit_lesson' chapter.ma_chuong lesson.ma_bai_hoc %}">Sửa bài</a><a href="{% url 'delete_content' 'lesson' lesson.ma_bai_hoc %}">Xóa</a>{% endif %}
+          </div>
+        </li>
+        {% empty %}<li>Chương này đang được cập nhật.</li>{% endfor %}
+      </ol>
+    </article>
+    {% empty %}<div class="panel learning-empty"><p>Nội dung khóa học đang được cập nhật.</p></div>{% endfor %}
+  </section>
+  <aside class="stack course-aside" aria-label="Lớp học và tiến độ">
+    {% if group %}
+    <section class="panel course-aside-panel">
+      <h2>Tiến độ của bạn</h2>
+      <p>{{ completed }}/{{ lesson_count }} bài đã hoàn thành · {{ group.ma_code }}</p>
+      {% if lesson_count %}<progress value="{{ completed }}" max="{{ lesson_count }}" aria-label="Tiến độ bài học"></progress>{% endif %}
+      {% for item in enrolled %}<a class="button button-secondary" href="{% url 'class_detail' item.ma_lop %}">Vào lớp {{ item.ma_code }}</a>{% endfor %}
+    </section>
+    {% endif %}
+    <section class="panel course-aside-panel" id="lop-mo">
+      <h2>Lớp đang mở đăng ký</h2>
+      {% for item in open_groups %}
+      <article class="course-class">
+        <div class="course-class-top"><h3>{{ item.ma_code }}</h3><strong>{{ item.fee }}</strong></div>
+        {% if item.giang_vien_chinh %}<p>{{ item.giang_vien_chinh }}</p>{% endif %}
+        <p>{{ item.ngay_bat_dau|date:"d/m/Y" }} – {{ item.ngay_ket_thuc|date:"d/m/Y" }}</p>
+        {% if item.so_cho_con > 0 %}<p>Còn {{ item.so_cho_con }} chỗ</p>{% else %}<p>Đã đủ chỗ</p>{% endif %}
+        {% if can_edit %}<a class="button button-secondary" href="{% url 'class_detail' item.ma_lop %}">Xem lớp</a>
+        {% elif is_student %}<a class="button button-secondary" href="{% url 'class_detail' item.ma_lop %}">Xem lớp và đăng ký</a>
+        {% elif not request.actor and item.so_cho_con > 0 %}
+        <a class="button button-secondary" href="{% url 'login' %}?next={{ request.path|urlencode }}">Đăng nhập để đăng ký</a>
+        {% endif %}
+      </article>
+      {% empty %}<p>Hiện chưa có đợt mở lớp mới.</p>{% endfor %}
+    </section>
+  </aside>
+</div>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<a class="back-link" href="{% url 'classes' %}">Danh sách lớp học</a>
+<header class="page-heading"><div><h1>{{ title }}</h1><p>{{ group.ngay_bat_dau|date:"d/m/Y" }} – {{ group.ngay_ket_thuc|date:"d/m/Y" }}</p></div><span class="status status-{{ group_state.color }}">{{ group_state.label }}</span></header>
+<section class="panel detail-strip">
+  <div><span>Giảng viên chính</span><strong>{{ group.giang_vien_chinh|default:"—" }}</strong></div>
+  <div><span>Sĩ số</span><strong>{{ group.si_so_hien_tai }} / {{ group.si_so_toi_da }}</strong></div>
+  <div><span>Học phí</span><strong>{{ fee }}</strong></div>
+</section>
+<div class="button-row context-actions">
+  {% for item in actions %}<a class="button {% if forloop.first %}button-primary{% else %}button-secondary{% endif %}" href="{{ item.url }}">{{ item.label }}</a>{% endfor %}
+  {% if can_register %}<form action="{% url 'register' group.ma_lop %}" method="post">{% csrf_token %}<button class="button button-primary" type="submit">Đăng ký lớp</button></form>{% endif %}
+  {% if can_cancel %}<form action="{% url 'cancel' group.ma_lop %}" method="post">{% csrf_token %}<button class="button button-secondary" type="submit">Hủy đăng ký</button></form>{% endif %}
+</div>
+<div class="stack">
+  {% for grid in tables %}{% include "partials/table.html" %}{% endfor %}
+  {% if lessons %}<section class="panel course-panel"><div class="panel-heading"><h2>Bài học lý thuyết</h2></div>
+    <ul class="lesson-list">{% for lesson in lessons %}<li><a href="{% url 'lesson' group.ma_lop lesson.ma_bai_hoc %}">{{ lesson.tieu_de }}</a><span>{{ lesson.ten_chuong }}{% if lesson.thoi_diem_hoan_thanh %} · Đã học{% endif %}</span></li>{% endfor %}</ul>
+  </section>{% endif %}
+  {% if notices %}<section class="panel course-panel"><div class="panel-heading"><h2>Thông báo lớp</h2></div>
+  {% for notice in notices %}<article class="notice-item"><h3>{{ notice.tieu_de }}{% if notice.ghim %} <small>Đã ghim</small>{% endif %}</h3><p>{{ notice.noi_dung|linebreaksbr }}</p><span class="muted">{{ notice.thoi_diem_dang|date:"d/m/Y H:i" }}</span></article>{% endfor %}
+  </section>{% endif %}
+</div>
+{% endblock %}

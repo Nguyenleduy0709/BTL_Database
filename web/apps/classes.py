@@ -3,18 +3,13 @@ from django.core.exceptions import PermissionDenied
 from django.shortcuts import render
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
-from core.auth import ADMIN, STUDENT, TEACHER, can_teach, require_teaching, role_required
-from core.db import call_proc, execute, fetch_all, fetch_one
+from core.auth import ADMIN, STUDENT, TEACHER, require_teaching, role_required
+from core.db import call_proc, execute, fetch_all
 from .ui import action, area, day_field, enum, form_page, link, money, options, page, require_row, select, status, table, text, time_field
 
 
 def admin(request):
     return ADMIN in request.actor["roles"]
-
-
-def enrollment(request, class_id):
-    return fetch_one("SELECT * FROM DangKyLop WHERE ma_lop = %s AND ma_hoc_vien = %s",
-                     [class_id, request.actor["ma_nguoi_dung"]])
 
 
 def teachers():
@@ -33,7 +28,7 @@ def classes(request):
         rows = fetch_all("SELECT * FROM v_lop_hoc ORDER BY ma_lop")
     elif TEACHER in request.actor["roles"]:
         rows = fetch_all("""
-            SELECT DISTINCT l.* FROM v_lop_hoc l JOIN KhoaHoc k USING (ma_khoa_hoc)
+            SELECT l.* FROM v_lop_hoc l JOIN KhoaHoc k USING (ma_khoa_hoc)
             LEFT JOIN PhanCongGiangDay p ON p.ma_lop = l.ma_lop AND p.ma_giang_vien = %s
             LEFT JOIN DangKyLop d ON d.ma_lop = l.ma_lop AND d.ma_hoc_vien = %s AND d.trang_thai <> 'DA_HUY'
             WHERE p.ma_giang_vien IS NOT NULL OR (%s AND (d.ma_dang_ky IS NOT NULL OR
@@ -59,28 +54,35 @@ def classes(request):
 @role_required()
 @require_GET
 def class_detail(request, class_id):
+    uid = request.actor["ma_nguoi_dung"]
+    roles = request.actor["roles"]
     group = require_row("""
-        SELECT l.*, k.trang_thai AS trang_thai_khoa_hoc
-        FROM v_lop_hoc l JOIN KhoaHoc k USING (ma_khoa_hoc) WHERE l.ma_lop = %s
-    """, [class_id])
-    staff = admin(request) or can_teach(request, class_id)
-    enrolled = enrollment(request, class_id)
-    member = bool(enrolled and enrolled["trang_thai"] != "DA_HUY")
-    student = STUDENT in request.actor["roles"]
+        SELECT l.*, k.trang_thai AS trang_thai_khoa_hoc,
+               d.ma_dang_ky, d.trang_thai AS trang_thai_ghi_danh,
+               p.ma_giang_vien IS NOT NULL AS co_phan_cong
+        FROM v_lop_hoc l JOIN KhoaHoc k USING (ma_khoa_hoc)
+        LEFT JOIN DangKyLop d ON d.ma_lop = l.ma_lop AND d.ma_hoc_vien = %s
+        LEFT JOIN PhanCongGiangDay p ON p.ma_lop = l.ma_lop AND p.ma_giang_vien = %s
+        WHERE l.ma_lop = %s
+    """, [uid, uid, class_id])
+    teacher = TEACHER in roles and group["co_phan_cong"]
+    staff = ADMIN in roles or teacher
+    member = group["ma_dang_ky"] is not None and group["trang_thai_ghi_danh"] != "DA_HUY"
+    student = STUDENT in roles
     registration_open = group["trang_thai"] == "MO_DANG_KY" and group["trang_thai_khoa_hoc"] == "CONG_BO"
     if not (staff or member or student and registration_open):
         raise PermissionDenied
 
     actions = []
     grids = []
-    if admin(request):
+    if ADMIN in roles:
         actions += [link("Sửa lớp", "edit_class", class_id), link("Phân công giảng dạy", "assign_teacher", class_id)]
         assignments = fetch_all("""
             SELECT n.ho_ten, p.vai_tro_day FROM PhanCongGiangDay p JOIN NguoiDung n ON n.ma_nguoi_dung = p.ma_giang_vien
             WHERE p.ma_lop = %s ORDER BY p.la_chinh DESC, n.ho_ten
         """, [class_id])
         grids.append(table("Phân công", {"Giảng viên": "ho_ten", "Vai trò": lambda r: status(r["vai_tro_day"])}, assignments))
-    if can_teach(request, class_id):
+    if teacher:
         actions.append(link("Giao bài", "assign_exercise", class_id))
     if staff:
         actions += [link("Bảng điểm", "class_report", class_id), link("Thêm buổi học", "new_session", class_id),
@@ -103,13 +105,13 @@ def class_detail(request, class_id):
         FROM LopHoc l JOIN Chuong c USING (ma_khoa_hoc) JOIN BaiHoc b USING (ma_chuong)
         LEFT JOIN TienDoBaiHoc t ON t.ma_bai_hoc = b.ma_bai_hoc AND t.ma_dang_ky = %s
         WHERE l.ma_lop = %s ORDER BY c.thu_tu, b.thu_tu
-    """, [enrolled["ma_dang_ky"], class_id]) if member else []
+    """, [group["ma_dang_ky"], class_id]) if member else []
     return render(request, "class.html", {
         "title": f"{group['ma_code']} · {group['ten_khoa_hoc']}", "section": "classes", "group": group,
         "group_state": status(group["trang_thai"]), "fee": money(group["hoc_phi"]), "actions": actions,
         "tables": grids, "notices": notices, "lessons": lessons,
         "can_register": student and not member and registration_open,
-        "can_cancel": student and enrolled and enrolled["trang_thai"] == "DANG_HOC",
+        "can_cancel": student and group["trang_thai_ghi_danh"] == "DANG_HOC",
     })
 
 
@@ -151,10 +153,11 @@ def edit_class(request, class_id=None):
         fields["teacher"] = select("Giảng viên chính", teachers())
 
     def save(data):
+        schedule = [data["ngay_bat_dau"], data["ngay_ket_thuc"], data["si_so_toi_da"], data["hoc_phi"]]
         if original:
-            call_proc("sp_sua_lop", [class_id, *data.values()])
+            call_proc("sp_sua_lop", [class_id, data["ma_code"], *schedule, data["trang_thai"]])
             return link("", "class_detail", class_id).url
-        new_id = call_proc("sp_tao_lop", list(data.values()), out=True)
+        new_id = call_proc("sp_tao_lop", [data["ma_code"], data["ma_khoa_hoc"], *schedule, data["teacher"]], out=True)
         return link("", "class_detail", new_id).url
 
     return form_page(request, "Sửa lớp" if original else "Mở lớp mới", "classes", fields, save,
@@ -191,7 +194,7 @@ def new_session(request, class_id):
         execute("""
             INSERT INTO BuoiHoc(ma_lop, so_thu_tu, bat_dau, ket_thuc, hinh_thuc, dia_diem, ma_bai_hoc)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
-        """, [class_id, *data.values()])
+        """, [class_id, data["order"], data["start"], data["end"], data["type"], data["location"], data["lesson"]])
 
     return form_page(request, "Thêm buổi học", "classes", fields, save, link("Về lớp học", "class_detail", class_id))
 
@@ -206,7 +209,7 @@ def new_notice(request, class_id):
     def save(data):
         execute("""
             INSERT INTO ThongBaoLop(ma_lop, ma_nguoi_dang, tieu_de, noi_dung, ghim) VALUES (%s, %s, %s, %s, %s)
-        """, [class_id, request.actor["ma_nguoi_dung"], *data.values()])
+        """, [class_id, request.actor["ma_nguoi_dung"], data["title"], data["body"], data["pin"]])
 
     return form_page(request, "Đăng thông báo", "classes", fields, save, link("Về lớp học", "class_detail", class_id))
 
@@ -233,7 +236,7 @@ def attendance(request, session_id):
         execute("""
             INSERT INTO DiemDanh(ma_buoi, ma_dang_ky, trang_thai, ghi_chu) VALUES (%s, %s, %s, %s)
             AS moi ON DUPLICATE KEY UPDATE trang_thai = moi.trang_thai, ghi_chu = moi.ghi_chu
-        """, [session_id, *data.values()])
+        """, [session_id, data["enrollment"], data["state"], data["note"]])
         return link("", "attendance", session_id).url
 
     return form_page(request, f"Điểm danh · Buổi {meeting['so_thu_tu']}", "classes", fields, save,

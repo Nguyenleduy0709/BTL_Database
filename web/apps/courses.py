@@ -130,16 +130,20 @@ def edit_course(request, course_id=None):
     }
 
     def save(data):
+        values = [
+            data["ma_code"], data["ten_khoa_hoc"], data["ma_danh_muc"],
+            data["mo_ta"], data["trinh_do"], data["trang_thai"],
+        ]
         if original:
             execute("""
                 UPDATE KhoaHoc SET ma_code=%s, ten_khoa_hoc=%s, ma_danh_muc=%s, mo_ta=%s,
                                    trinh_do=%s, trang_thai=%s WHERE ma_khoa_hoc=%s
-            """, [*data.values(), course_id])
+            """, [*values, course_id])
             return link("", "course_detail", course_id).url
         new_id = execute("""
             INSERT INTO KhoaHoc(ma_code, ten_khoa_hoc, ma_danh_muc, mo_ta, trinh_do, trang_thai, ma_nguoi_tao)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
-        """, [*data.values(), request.actor["ma_nguoi_dung"]])
+        """, [*values, request.actor["ma_nguoi_dung"]])
         return link("", "course_detail", new_id).url
 
     return form_page(request, "Sửa khóa học" if original else "Tạo khóa học", "courses", fields, save,
@@ -156,10 +160,11 @@ def edit_chapter(request, parent_id, chapter_id=None):
               "ten_chuong": text("Tên chương")}
 
     def save(data):
+        values = [data["thu_tu"], data["ten_chuong"]]
         if original:
-            execute("UPDATE Chuong SET thu_tu=%s, ten_chuong=%s WHERE ma_chuong=%s", [*data.values(), chapter_id])
+            execute("UPDATE Chuong SET thu_tu=%s, ten_chuong=%s WHERE ma_chuong=%s", [*values, chapter_id])
         else:
-            execute("INSERT INTO Chuong(ma_khoa_hoc, thu_tu, ten_chuong) VALUES (%s, %s, %s)", [parent_id, *data.values()])
+            execute("INSERT INTO Chuong(ma_khoa_hoc, thu_tu, ten_chuong) VALUES (%s, %s, %s)", [parent_id, *values])
 
     return form_page(request, "Sửa chương" if original else "Tạo chương", "courses", fields, save,
                      link("Khóa học", "course_detail", parent_id), initial=original)
@@ -177,12 +182,13 @@ def edit_lesson(request, parent_id, lesson_id=None):
     }
 
     def save(data):
+        values = [data["thu_tu"], data["tieu_de"], data["noi_dung"], data["thoi_luong_phut"]]
         if original:
             execute("UPDATE BaiHoc SET thu_tu=%s, tieu_de=%s, noi_dung=%s, thoi_luong_phut=%s WHERE ma_bai_hoc=%s",
-                    [*data.values(), lesson_id])
+                    [*values, lesson_id])
         else:
             execute("INSERT INTO BaiHoc(ma_chuong, thu_tu, tieu_de, noi_dung, thoi_luong_phut) VALUES (%s, %s, %s, %s, %s)",
-                    [parent_id, *data.values()])
+                    [parent_id, *values])
 
     fields["noi_dung"].widget.attrs["rows"] = 16
     fields["noi_dung"].help_text = "Bắt đầu tiêu đề mục bằng ##. Đặt ví dụ mã giữa hai dòng có ba dấu backtick."

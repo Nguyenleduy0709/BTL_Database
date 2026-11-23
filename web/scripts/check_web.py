@@ -20,7 +20,7 @@ QUERY_DIR = Path(__file__).resolve().parents[2] / "database" / "queries"
 def main():
     demo_password = os.getenv("CODELAB_DEMO_PASSWORD")
     if not demo_password:
-        raise SystemExit("Set CODELAB_DEMO_PASSWORD in .env to test the sample accounts.")
+        raise SystemExit("Cần đặt CODELAB_DEMO_PASSWORD trong .env để kiểm thử tài khoản mẫu.")
     urls = {
         "admin": ["/", "/lop/1/", "/khoa-hoc/1/", "/giao-bai/1/thong-ke/", "/lop/1/bang-diem/",
                   "/nhat-ky/", "/hoc-phi/", "/nguoi-dung/", "/bai-tap/1/"],
@@ -39,7 +39,13 @@ def main():
             if user == "an":
                 for url in ("/nguoi-dung/", "/lan-nop/3/ket-qua/"):
                     assert client.get(url).status_code == 403, url
+                class_page = client.get("/lop/1/")
+                assert b'href="/lop/1/bai-hoc/3/"' in class_page.content
+                assert b'href="/lop/1/giao-bai/"' not in class_page.content
                 check_learning(client, demo_password)
+            if user == "giangvien":
+                assert b'href="/lop/1/giao-bai/"' in client.get("/lop/1/").content
+                assert client.get("/lop/2/").status_code == 403
             assert client.get("/sql-lab/Q07/run/").status_code == 404
             print(f"{user}: {len(pages)} trang đạt")
         check_queries()

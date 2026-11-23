@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block guest_content %}
+<div class="login-layout">
+  <section class="login-aside">
+    <a class="brand" href="{% url 'courses' %}"><span class="brand-mark" aria-hidden="true">&lt;/&gt;</span><span>CodeLab<small>Quản lý đào tạo</small></span></a>
+    <div class="login-aside-main">
+      <h1>Học lập trình qua thực hành</h1>
+      <p>Đọc bài, luyện tập và theo dõi tiến độ học của bạn trên CodeLab.</p>
+      <a class="button button-secondary" href="{% url 'courses' %}">Khám phá khóa học</a>
+    </div>
+  </section>
+  <section class="login-main">
+    <div class="login-form">
+      {% include "partials/messages.html" %}
+      {% block account_content %}{% endblock %}
+    </div>
+  </section>
+</div>
+{% endblock %}

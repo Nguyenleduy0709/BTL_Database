@@ -24,10 +24,10 @@ def fetch_one(sql, params=None):
     return rows[0] if rows else None
 
 
-def execute(sql, params=None):
+def execute(sql, params=None, *, affected=False):
     with connections["default"].cursor() as cursor:
         cursor.execute(sql, params)
-        return cursor.lastrowid
+        return cursor.rowcount if affected else cursor.lastrowid
 
 
 def call_proc(name, params=(), out=False):

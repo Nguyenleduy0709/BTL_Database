@@ -30,20 +30,14 @@ def take_quota(scope, value, limit, seconds):
             INSERT INTO HanMucXacThuc(khoa, het_han) VALUES (%s, UTC_TIMESTAMP(6))
             ON DUPLICATE KEY UPDATE khoa = khoa
         """, [key])
-        quota = fetch_one("""
-            SELECT so_lan, het_han <= UTC_TIMESTAMP(6) AS het_han
-            FROM HanMucXacThuc WHERE khoa = %s FOR UPDATE
-        """, [key])
-        if quota["het_han"]:
-            execute("""
-                UPDATE HanMucXacThuc SET so_lan = 1, het_han = TIMESTAMPADD(SECOND, %s, UTC_TIMESTAMP(6))
-                WHERE khoa = %s
-            """, [seconds, key])
-        elif quota["so_lan"] >= limit:
-            return False
-        else:
-            execute("UPDATE HanMucXacThuc SET so_lan = so_lan + 1 WHERE khoa = %s", [key])
-    return True
+        # Biểu thức so_lan dùng het_han cũ trước khi cửa sổ được gia hạn.
+        updated = execute("""
+            UPDATE HanMucXacThuc
+            SET so_lan = IF(het_han <= UTC_TIMESTAMP(6), 1, so_lan + 1),
+                het_han = IF(het_han <= UTC_TIMESTAMP(6), TIMESTAMPADD(SECOND, %s, UTC_TIMESTAMP(6)), het_han)
+            WHERE khoa = %s AND (het_han <= UTC_TIMESTAMP(6) OR so_lan < %s)
+        """, [seconds, key, limit], affected=True)
+    return updated == 1
 
 
 def quota_email(email):

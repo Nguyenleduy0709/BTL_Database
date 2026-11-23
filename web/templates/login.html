@@ -1,25 +1,14 @@
-{% extends "base.html" %}
-{% block guest_content %}
-<div class="login-layout">
-  <section class="login-aside">
-    <a class="brand" href="{% url 'login' %}"><span class="brand-mark" aria-hidden="true">&lt;/&gt;</span><span>CodeLab<small>Quản lý đào tạo</small></span></a>
-    <div class="login-aside-main">
-      <h1>Học lập trình qua thực hành</h1>
-      <p>Đọc bài, luyện tập và theo dõi tiến độ học của bạn trên CodeLab.</p>
-      <a class="button button-secondary" href="{% url 'courses' %}">Khám phá khóa học</a>
-    </div>
-  </section>
-  <section class="login-main">
-    <div class="login-form">
-      {% include "partials/messages.html" %}
-      <h2>Đăng nhập</h2>
-      <p class="subtle">Đăng nhập để vào lớp và xem tiến độ học của bạn.</p>
-      <form method="post">{% csrf_token %}{% include "partials/form_fields.html" %}<button class="button button-primary login-button" type="submit">Đăng nhập</button></form>
-      <div class="account-links">
-        <a href="{% url 'reset_password' %}">Quên mật khẩu?</a>
-        <a href="{% url 'register_account' %}">Tạo tài khoản học viên</a>
-      </div>
-    </div>
-  </section>
+{% extends "auth_layout.html" %}
+{% block account_content %}
+<h2>Đăng nhập</h2>
+<p class="subtle">Đăng nhập để vào lớp và xem tiến độ học của bạn.</p>
+<form method="post">
+  {% csrf_token %}
+  {% include "partials/form_fields.html" %}
+  <button class="button button-primary login-button" type="submit">Đăng nhập</button>
+</form>
+<div class="account-links">
+  <a href="{% url 'reset_password' %}">Quên mật khẩu?</a>
+  <a href="{% url 'register_account' %}">Tạo tài khoản học viên</a>
 </div>
 {% endblock %}

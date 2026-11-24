@@ -20,7 +20,7 @@ from core.db import call_proc, execute, fetch_one
 def main():
     today = date.today()
     code = "RACE-" + uuid4().hex[:8].upper()
-    class_id = call_proc("sp_tao_lop", [code, 1, today, today + timedelta(days=42), 1, 0, 2], out=True)
+    class_id = call_proc("sp_tao_lop", [code, 1, today, today + timedelta(days=42), 1, 2], out=True)
     ready = Barrier(2, timeout=10)
 
     def enroll(student):

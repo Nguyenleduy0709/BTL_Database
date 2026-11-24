@@ -44,11 +44,11 @@ flowchart LR
     R -.- RK([Mã lượt, mã test])
 ```
 
-## Học phí, phản hồi và chứng chỉ
+## Phản hồi, chứng chỉ và lưu trữ
 
 ```mermaid
 flowchart LR
-    D[DangKyLop] ---|1| DT{Thanh toán} ---|N| T[ThanhToan]
+    D[DangKyLop] ---|1| DT{"Giao dịch cũ"} ---|N| T[ThanhToan]
     D ---|1| DS{Đánh giá} ---|0..1| S[DanhGiaLopHoc]
     D ---|1| DC{Nhận chứng chỉ} ---|0..1| C[ChungChi]
     C -.- CS([Số hiệu, ngày cấp, xếp loại])

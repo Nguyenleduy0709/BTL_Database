@@ -24,7 +24,7 @@ erDiagram
     DangKyLop ||--o{ DiemDanh : co_mat
     LopHoc ||--o{ ThongBaoLop : nhan
     NguoiDung ||--o{ ThongBaoLop : dang
-    DangKyLop ||--o{ ThanhToan : tra
+    DangKyLop ||--o{ ThanhToan : lich_su
     DangKyLop ||--o| DanhGiaLopHoc : danh_gia
     DangKyLop ||--o| ChungChi : nhan
     NguoiDung ||--o{ BaiTap : soan
@@ -48,4 +48,4 @@ erDiagram
     NguoiDung |o--o{ NhatKyHeThong : thuc_hien
 ```
 
-Các cột, khóa và kiểu dữ liệu nằm trong [01_schema.sql](../database/01_schema.sql). Các khóa xác định phụ thuộc hàm được liệt kê trong [báo cáo](bao-cao.md).
+Lược đồ SQL khai báo cột, kiểu dữ liệu và ràng buộc. Danh mục bảng giải thích khóa chính, khóa ngoại và các ràng buộc duy nhất theo từng nhóm nghiệp vụ. [Lược đồ lõi](../database/01_schema.sql) · [Bảng xác thực email](../database/14_xac_thuc_tai_khoan.sql) · [Danh mục bảng](bang-va-truy-cap-co-so-du-lieu.md)

@@ -72,6 +72,11 @@ if ($ready -eq '0') {
         & $venv scripts/init_db.py --account-auth-only --port $DatabasePort
         if ($LASTEXITCODE -ne 0) { throw 'Nâng cấp xác thực email thất bại.' }
     }
+    $free = Invoke-LocalMySql "SELECT COUNT(*) FROM information_schema.TABLE_CONSTRAINTS WHERE TABLE_SCHEMA='btlcsdl' AND LOWER(TABLE_NAME)='lophoc' AND CONSTRAINT_NAME='ck_lophoc_mien_phi' AND ENFORCED='YES'"
+    if ($free -ne '1') {
+        & $venv scripts/init_db.py --free-courses-only --port $DatabasePort
+        if ($LASTEXITCODE -ne 0) { throw 'Nâng cấp lớp học miễn phí thất bại.' }
+    }
 }
 if ($InitOnly) { return }
 

@@ -53,10 +53,6 @@ def percent(value):
     return "Chưa có dữ liệu" if value is None else f"{value:.2f}".rstrip("0").rstrip(".") + "%"
 
 
-def money(value):
-    return f"{value:,.0f}".replace(",", ".") + " ₫"
-
-
 def require_row(sql, params):
     row = fetch_one(sql, params)
     if row is None:

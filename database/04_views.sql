@@ -95,17 +95,6 @@ FROM v_tien_do_thuc_hanh p JOIN NguoiDung n ON n.ma_nguoi_dung = p.ma_hoc_vien
 LEFT JOIN v_trang_thai_hoc_vien_bai_giao s USING (ma_dang_ky)
 GROUP BY p.ma_dang_ky, p.ma_lop, p.ma_hoc_vien, p.tong_bat_buoc, p.so_da_dat, p.tien_do, n.ho_ten;
 
-CREATE VIEW v_cong_no_hoc_phi AS
-SELECT dk.ma_dang_ky, dk.ma_lop, dk.ma_hoc_vien, n.ho_ten, l.ma_code, l.hoc_phi,
-       COALESCE(SUM(t.so_tien), 0) AS da_thanh_toan,
-       l.hoc_phi - COALESCE(SUM(t.so_tien), 0) AS con_no
-FROM DangKyLop dk
-JOIN LopHoc l USING (ma_lop)
-JOIN NguoiDung n ON n.ma_nguoi_dung = dk.ma_hoc_vien
-LEFT JOIN ThanhToan t ON t.ma_dang_ky = dk.ma_dang_ky AND t.trang_thai = 'THANH_CONG'
-WHERE dk.trang_thai <> 'DA_HUY'
-GROUP BY dk.ma_dang_ky, dk.ma_lop, dk.ma_hoc_vien, n.ho_ten, l.ma_code, l.hoc_phi;
-
 CREATE VIEW v_chuyen_can AS
 SELECT dk.ma_dang_ky, dk.ma_lop, dk.ma_hoc_vien,
        COUNT(b.ma_buoi) AS tong_buoi,
@@ -132,9 +121,3 @@ FROM GiaoBai g JOIN BaiTap b USING (ma_bai_tap) JOIN LopHoc l USING (ma_lop);
 CREATE VIEW v_lan_nop_cong_khai AS
 SELECT ma_lan_nop, ma_giao, ma_hoc_vien, ma_ngon_ngu, thoi_diem_nop, trang_thai_cham, thoi_diem_cham
 FROM LanNop;
-
-CREATE VIEW v_tong_quan AS
-SELECT (SELECT COUNT(*) FROM LopHoc WHERE trang_thai IN ('DANG_HOC', 'MO_DANG_KY')) AS so_lop,
-       (SELECT COUNT(DISTINCT ma_hoc_vien) FROM DangKyLop WHERE trang_thai <> 'DA_HUY') AS so_hoc_vien,
-       (SELECT COUNT(*) FROM LanNop) AS so_lan_nop,
-       (SELECT COALESCE(SUM(so_tien),0) FROM ThanhToan WHERE trang_thai = 'THANH_CONG') AS doanh_thu;

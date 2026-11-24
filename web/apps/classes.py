@@ -5,7 +5,7 @@ from django.views.decorators.http import require_GET, require_http_methods, requ
 
 from core.auth import ADMIN, STUDENT, TEACHER, require_teaching, role_required
 from core.db import call_proc, execute, fetch_all
-from .ui import action, area, day_field, enum, form_page, link, money, options, page, require_row, select, status, table, text, time_field
+from .ui import action, area, day_field, enum, form_page, link, options, page, require_row, select, status, table, text, time_field
 
 
 def admin(request):
@@ -45,9 +45,9 @@ def classes(request):
     grid = table("Danh sách lớp học", {
         "Mã lớp": lambda r: link(r["ma_code"], "class_detail", r["ma_lop"]), "Khóa học": "ten_khoa_hoc",
         "Giảng viên chính": "giang_vien_chinh", "Chỗ còn": lambda r: r["si_so_toi_da"] - r["si_so_hien_tai"],
-        "Học phí": lambda r: money(r["hoc_phi"]), "Trạng thái": lambda r: status(r["trang_thai"]),
+        "Trạng thái": lambda r: status(r["trang_thai"]),
     }, rows)
-    return page(request, "Lớp học", "classes", tables=[grid],
+    return page(request, "Lớp học", "classes", description="Tất cả lớp học đều miễn phí.", tables=[grid],
                 actions=[link("Mở lớp mới", "new_class")] if admin(request) else [])
 
 
@@ -108,7 +108,7 @@ def class_detail(request, class_id):
     """, [group["ma_dang_ky"], class_id]) if member else []
     return render(request, "class.html", {
         "title": f"{group['ma_code']} · {group['ten_khoa_hoc']}", "section": "classes", "group": group,
-        "group_state": status(group["trang_thai"]), "fee": money(group["hoc_phi"]), "actions": actions,
+        "group_state": status(group["trang_thai"]), "actions": actions,
         "tables": grids, "notices": notices, "lessons": lessons,
         "can_register": student and not member and registration_open,
         "can_cancel": student and group["trang_thai_ghi_danh"] == "DANG_HOC",
@@ -145,7 +145,6 @@ def edit_class(request, class_id=None):
     fields.update({
         "ngay_bat_dau": day_field("Ngày bắt đầu"), "ngay_ket_thuc": day_field("Ngày kết thúc"),
         "si_so_toi_da": forms.IntegerField(label="Sĩ số tối đa", min_value=1, max_value=65535),
-        "hoc_phi": forms.DecimalField(label="Học phí (₫)", min_value=0, max_digits=12, decimal_places=0),
     })
     if original:
         fields["trang_thai"] = enum("Trạng thái", ["MO_DANG_KY", "DANG_HOC", "KET_THUC", "HUY"])
@@ -153,7 +152,7 @@ def edit_class(request, class_id=None):
         fields["teacher"] = select("Giảng viên chính", teachers())
 
     def save(data):
-        schedule = [data["ngay_bat_dau"], data["ngay_ket_thuc"], data["si_so_toi_da"], data["hoc_phi"]]
+        schedule = [data["ngay_bat_dau"], data["ngay_ket_thuc"], data["si_so_toi_da"]]
         if original:
             call_proc("sp_sua_lop", [class_id, data["ma_code"], *schedule, data["trang_thai"]])
             return link("", "class_detail", class_id).url

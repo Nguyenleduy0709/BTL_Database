@@ -8,7 +8,7 @@
     <p class="learning-category">{{ course.ten_danh_muc }} <span aria-hidden="true">·</span> {{ level_name }}</p>
     <h1>{{ title }}</h1>
     {% if course.mo_ta %}<p>{{ course.mo_ta|linebreaksbr }}</p>{% endif %}
-    <div class="course-hero-meta"><span>{{ chapters|length }} chương</span><span>{{ lesson_count }} bài học</span><span>{{ minutes }} phút</span></div>
+    <div class="course-hero-meta"><span>Miễn phí</span><span>{{ chapters|length }} chương</span><span>{{ lesson_count }} bài học</span><span>{{ minutes }} phút</span></div>
   </div>
   {% if next_lesson and group %}
     <a class="button button-secondary" href="{% url 'lesson' group.ma_lop next_lesson.ma_bai_hoc %}">
@@ -70,7 +70,7 @@
       <h2>Lớp đang mở đăng ký</h2>
       {% for item in open_groups %}
       <article class="course-class">
-        <div class="course-class-top"><h3>{{ item.ma_code }}</h3><strong>{{ item.fee }}</strong></div>
+        <div class="course-class-top"><h3>{{ item.ma_code }}</h3><strong>Miễn phí</strong></div>
         {% if item.giang_vien_chinh %}<p>{{ item.giang_vien_chinh }}</p>{% endif %}
         <p>{{ item.ngay_bat_dau|date:"d/m/Y" }} – {{ item.ngay_ket_thuc|date:"d/m/Y" }}</p>
         {% if item.so_cho_con > 0 %}<p>Còn {{ item.so_cho_con }} chỗ</p>{% else %}<p>Đã đủ chỗ</p>{% endif %}

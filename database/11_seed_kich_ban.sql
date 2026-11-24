@@ -26,15 +26,15 @@ INSERT INTO BaiHoc VALUES
 (4,2,2,'Sắp xếp và tập hợp','Dùng set để loại trùng, sau đó dùng sorted để xếp thứ tự các phần tử.',45),
 (5,3,1,'JOIN và GROUP BY','Ghép dữ liệu theo khóa ngoại rồi tổng hợp theo nhóm.',60);
 
-CALL sp_tao_lop('PY01', 1, CURRENT_DATE - INTERVAL 21 DAY, CURRENT_DATE + INTERVAL 28 DAY, 16, 1200000, 2, @py01);
-CALL sp_tao_lop('PY02', 1, CURRENT_DATE - INTERVAL 7 DAY, CURRENT_DATE + INTERVAL 42 DAY, 12, 1200000, 8, @py02);
-CALL sp_tao_lop('SQL01', 2, CURRENT_DATE + INTERVAL 3 DAY, CURRENT_DATE + INTERVAL 45 DAY, 20, 950000, 2, @sql01);
+CALL sp_tao_lop('PY01', 1, CURRENT_DATE - INTERVAL 21 DAY, CURRENT_DATE + INTERVAL 28 DAY, 16, 2, @py01);
+CALL sp_tao_lop('PY02', 1, CURRENT_DATE - INTERVAL 7 DAY, CURRENT_DATE + INTERVAL 42 DAY, 12, 8, @py02);
+CALL sp_tao_lop('SQL01', 2, CURRENT_DATE + INTERVAL 3 DAY, CURRENT_DATE + INTERVAL 45 DAY, 20, 2, @sql01);
 CALL sp_phan_cong_giang_vien(@py01, 8, 'TRO_GIANG');
 CALL sp_dang_ky_lop(@py01, 3, @dk_an);
 CALL sp_dang_ky_lop(@py01, 4, @dk_binh);
 CALL sp_dang_ky_lop(@py01, 5, @dk_chi);
 CALL sp_dang_ky_lop(@py02, 6, @dk_dung);
-CALL sp_sua_lop(@py01, 'PY01', CURRENT_DATE - INTERVAL 21 DAY, CURRENT_DATE + INTERVAL 28 DAY, 16, 1200000, 'DANG_HOC');
+CALL sp_sua_lop(@py01, 'PY01', CURRENT_DATE - INTERVAL 21 DAY, CURRENT_DATE + INTERVAL 28 DAY, 16, 'DANG_HOC');
 
 INSERT INTO TienDoBaiHoc(ma_dang_ky, ma_bai_hoc) VALUES
 (@dk_an,1), (@dk_an,2), (@dk_an,3), (@dk_binh,1), (@dk_binh,2), (@dk_chi,1);
@@ -51,9 +51,6 @@ INSERT INTO DiemDanh(ma_buoi, ma_dang_ky, trang_thai) VALUES
 (1,@dk_chi,'CO_MAT'), (2,@dk_chi,'VANG'), (3,@dk_chi,'CO_MAT');
 INSERT INTO ThongBaoLop(ma_lop, ma_nguoi_dang, tieu_de, noi_dung, ghim) VALUES
 (@py01, 2, 'Bài thực hành tuần này', 'Hãy thử thêm mảng toàn số âm và mảng có phần tử lớn nhất lặp lại trước khi nộp.', 1);
-CALL sp_thanh_toan(@dk_an, 700000, 'CHUYEN_KHOAN', 'PY01-AN-1');
-CALL sp_thanh_toan(@dk_an, 500000, 'CHUYEN_KHOAN', 'PY01-AN-2');
-CALL sp_thanh_toan(@dk_binh, 600000, 'TIEN_MAT', NULL);
 
 CALL sp_tao_bai_tap('SECOND-MAX', 'Phần tử lớn thứ hai phân biệt',
     'Cho một mảng số nguyên. In ra giá trị lớn thứ hai phân biệt. Nếu có ít hơn hai giá trị phân biệt, in NONE. Dữ liệu vào gồm các số nguyên cách nhau bởi dấu cách.',

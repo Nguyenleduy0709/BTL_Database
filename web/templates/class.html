@@ -5,7 +5,7 @@
 <section class="panel detail-strip">
   <div><span>Giảng viên chính</span><strong>{{ group.giang_vien_chinh|default:"—" }}</strong></div>
   <div><span>Sĩ số</span><strong>{{ group.si_so_hien_tai }} / {{ group.si_so_toi_da }}</strong></div>
-  <div><span>Học phí</span><strong>{{ fee }}</strong></div>
+  <div><span>Tham gia</span><strong>Miễn phí</strong></div>
 </section>
 <div class="button-row context-actions">
   {% for item in actions %}<a class="button {% if forloop.first %}button-primary{% else %}button-secondary{% endif %}" href="{{ item.url }}">{{ item.label }}</a>{% endfor %}

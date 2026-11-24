@@ -14,8 +14,8 @@ BEGIN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Số học viên từ 1 đến 1000, số lượt mỗi người từ 1 đến 100';
     END IF;
     START TRANSACTION;
-    INSERT INTO LopHoc(ma_code, ma_khoa_hoc, ngay_bat_dau, ngay_ket_thuc, si_so_toi_da, hoc_phi, trang_thai)
-    VALUES ('PY-BENCH', 1, CURRENT_DATE-INTERVAL 60 DAY, CURRENT_DATE+INTERVAL 30 DAY, p_hv, 0, 'DANG_HOC');
+    INSERT INTO LopHoc(ma_code, ma_khoa_hoc, ngay_bat_dau, ngay_ket_thuc, si_so_toi_da, trang_thai)
+    VALUES ('PY-BENCH', 1, CURRENT_DATE-INTERVAL 60 DAY, CURRENT_DATE+INTERVAL 30 DAY, p_hv, 'DANG_HOC');
     SET v_lop = LAST_INSERT_ID();
     INSERT INTO PhanCongGiangDay(ma_lop, ma_giang_vien, vai_tro_day) VALUES (v_lop, 2, 'CHINH');
 

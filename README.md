@@ -1,6 +1,6 @@
 # CodeLab · Quản lý khóa học lập trình và phân tích kết quả thực hành
 
-Dự án bài tập lớn môn Cơ sở dữ liệu. MySQL thực thi các ràng buộc, giao dịch, chấm điểm theo trọng số và thống kê. Django dùng SQL tham số hóa để phục vụ các màn hình demo. Chấm bài và thanh toán đều dùng dữ liệu giả lập.
+Dự án bài tập lớn môn Cơ sở dữ liệu. MySQL thực thi các ràng buộc, giao dịch, chấm điểm theo trọng số và thống kê. Django dùng SQL tham số hóa để phục vụ các màn hình demo. Tất cả khóa học và lớp học đều miễn phí. Kết quả chấm trong bản demo được nhập hoặc sinh giả lập.
 
 ## Chạy trên Windows với MySQL đã cài
 
@@ -26,7 +26,17 @@ docker compose up -d --wait
 
 Docker tự chạy các script SQL đánh số khi tạo volume lần đầu. Với máy chủ MySQL do bạn quản lý, dùng `.\.venv\Scripts\python.exe scripts/init_db.py --port 3306 --ask-password` trên bản cài hoặc lược đồ trống rồi chỉnh `DB_PORT` trong `.env`. Tài khoản nạp dữ liệu cần quyền tạo bảng, routine, trigger, tài khoản và role. Nếu MySQL bật binary log, dùng tài khoản quản trị có quyền phù hợp hoặc cấu hình `log_bin_trust_function_creators=ON` cho máy demo.
 
-Các chế độ trên dùng chung lược đồ `btlcsdl`. Django dùng session ký số và nạp lược đồ từ `database/*.sql`.
+Các chế độ trên dùng chung lược đồ `btlcsdl`. Script khởi tạo nạp lược đồ từ `database/*.sql`. Django kết nối MySQL và lưu phiên đăng nhập trong cookie ký số.
+
+## Nâng cấp bản cài đã có dữ liệu
+
+Khởi động lại bằng script Windows ở trên để tự áp dụng thay đổi miễn phí. Nếu dùng volume Docker cũ hoặc MySQL do bạn quản lý, chạy lệnh dưới đây bằng tài khoản quản trị MySQL trên đúng cổng rồi khởi động lại Django. Đổi số cổng nếu bản cài dùng cổng khác.
+
+```powershell
+.\.venv\Scripts\python.exe scripts/init_db.py --free-courses-only --port 33317 --ask-password
+```
+
+Bản nâng cấp đưa phí của tất cả lớp về 0 và giữ lại dữ liệu giao dịch cũ trong bảng lưu trữ. Bản cài mới tự thực hiện bước này. [SQL nâng cấp](database/09_mien_phi.sql)
 
 ## Đăng ký và đặt lại mật khẩu qua email
 
@@ -62,7 +72,7 @@ Xem mật khẩu của các tài khoản mẫu tại `CODELAB_DEMO_PASSWORD` tro
 
 | Tên tài khoản | Vai trò | Màn hình nên mở |
 | --- | --- | --- |
-| `admin` | Quản trị viên | Tổng quan, mở lớp, phân công, học phí, chứng chỉ và nhật ký |
+| `admin` | Quản trị viên | Tổng quan, mở lớp, phân công, chứng chỉ và nhật ký |
 | `giangvien` | Giảng viên | PY01, bảng điểm, chờ chấm và ngân hàng đề |
 | `an`, `binh`, `chi` | Học viên | Lớp đã đăng ký, nộp bài, kết quả từng test và tiến độ |
 | `dung` | Học viên PY02 | Nộp bài mới để diễn tập chấm mà vẫn giữ kết quả ban đầu của PY01 |
@@ -70,11 +80,11 @@ Xem mật khẩu của các tài khoản mẫu tại `CODELAB_DEMO_PASSWORD` tro
 
 ### Demo nhanh
 
-1. Vào **Lớp học → PY01**, mở bài thực hành *Phần tử lớn thứ hai phân biệt*. PY01 có **3 lượt nộp, 2 đã thử, 1 đạt, 1 chưa đạt, 1 chưa nộp**. An đạt **100%**, Bình **80%**, Chi chưa có điểm. Test *Giá trị lớn nhất lặp lại* có một người sai ở lượt chấm gần nhất.
+1. Trên bản dữ liệu mẫu mới nạp, vào **Lớp học → PY01** và mở bài *Phần tử lớn thứ hai phân biệt*. PY01 có **3 lượt nộp, 2 học viên đã thử, 1 đạt, 1 chưa đạt và 1 chưa nộp**. An đạt **100%**, Bình **80%**, Chi chưa có điểm. Test *Giá trị lớn nhất lặp lại* có một người sai ở lượt chấm gần nhất.
 2. Mở các câu Q07, Q14 và Q18 trong `database/queries` bằng MySQL Workbench hoặc mysql CLI để xem tổng hợp, lỗi gần nhất và bảng điểm pivot.
 3. Đăng nhập bằng `dung`, mở bài thực hành trong PY02 và nộp đoạn mã. Đăng nhập bằng `trogiang`, mở **Chờ chấm**, chọn kết quả cho năm test. Kết quả hiển thị trong lịch sử của Dung.
 4. Mở bài `SECOND-MAX` trong ngân hàng đề. Chọn **Tạo phiên bản mới**, mở bản sao rồi sửa một test. Kết quả đã chấm ở phiên bản 1 vẫn gắn với bộ test cũ.
-5. Đăng nhập quản trị, mở **Học phí & chứng chỉ** và kiểm tra điều kiện cấp của An. Ngay sau khi nạp dữ liệu, An đủ 100% thực hành và 80% chuyên cần.
+5. Đăng nhập quản trị, mở **Chứng chỉ** và kiểm tra điều kiện cấp của An. Ngay sau khi nạp dữ liệu, An đủ 100% thực hành và 80% chuyên cần.
 
 ## Danh mục và nội dung khóa học
 
@@ -104,13 +114,11 @@ Nếu chạy Docker, truyền `-p` vào lệnh MySQL để nhập mật khẩu r
 
 | Tài liệu | Nội dung |
 | --- | --- |
-| [Báo cáo kỹ thuật](docs/bao-cao.md) | Yêu cầu, quy tắc, 3NF, thiết kế, phân quyền và kiểm thử |
+| [Danh mục bảng và truy cập DB](docs/bang-va-truy-cap-co-so-du-lieu.md) | 31 bảng, khóa, view và các truy vấn từ backend |
 | [ERD quan hệ](docs/erd-quan-he.md) | Khóa chính, khóa ngoại và bội số bằng Crow’s Foot |
 | [ERD khái niệm](docs/erd-khai-niem.md) | Thực thể và quan hệ Chen theo phân hệ |
 | [Cấu trúc và phép đo chỉ mục](docs/toi-uu.md) | Q33/Q34, cách đọc kế hoạch và so sánh đối chứng |
-| [Slide bảo vệ](docs/CodeLab-Bao-ve-cap-nhat.pptx) | Slide mở đầu, thiết kế, demo và kiểm thử |
-| [Kịch bản bảo vệ](docs/kich-ban-bao-ve.md) | Thứ tự demo và câu hỏi kỹ thuật |
-| [Lược đồ SQL](database/01_schema.sql) | 28 bảng nghiệp vụ và một bảng nhật ký |
+| [Lược đồ SQL](database/01_schema.sql) | 29 bảng lõi, gồm bảng nhật ký và bảng lưu giao dịch cũ |
 | [Xác thực email](database/14_xac_thuc_tai_khoan.sql) | Bảng OTP, hạn mức và procedure tạo học viên đã xác thực |
 | [Ngân hàng truy vấn](database/queries) | Q01–Q35 dùng với MySQL Workbench hoặc mysql CLI |
 

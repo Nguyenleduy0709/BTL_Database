@@ -3,7 +3,7 @@ from django.views.decorators.http import require_GET
 
 from core.auth import ADMIN, STUDENT, TEACHER, role_required
 from core.db import fetch_all, fetch_one
-from .ui import link, money, percent, status, table
+from .ui import link, percent, status, table
 
 
 @role_required()
@@ -31,7 +31,7 @@ def dashboard(request):
     if ADMIN in roles:
         overview = fetch_one("SELECT * FROM v_tong_quan")
         metrics = [("Lớp đang hoạt động", overview["so_lop"], "LH"), ("Học viên ghi danh", overview["so_hoc_vien"], "HV"),
-                   ("Lượt nộp", overview["so_lan_nop"], "LN"), ("Học phí đã thu", money(overview["doanh_thu"]), "₫")]
+                   ("Lượt nộp", overview["so_lan_nop"], "LN"), ("Lượt chờ chấm", overview["cho_cham"], "CC")]
         activity_scope, parameters = "", []
         groups = fetch_all("SELECT * FROM v_lop_hoc ORDER BY ma_lop LIMIT 8")
     else:

@@ -25,6 +25,8 @@ def main():
                       help="Chỉ bổ sung nội dung cho hai khóa mẫu đã có.")
     mode.add_argument("--account-auth-only", action="store_true",
                       help="Chỉ nâng cấp cơ sở dữ liệu đã có để dùng xác thực email.")
+    mode.add_argument("--free-courses-only", action="store_true",
+                      help="Chỉ nâng cấp cơ sở dữ liệu đã có để mọi lớp đều miễn phí.")
     parser.add_argument("--shared-memory")
     args = parser.parse_args()
 
@@ -44,6 +46,8 @@ def main():
         scripts = [database_dir / "14_xac_thuc_tai_khoan.sql"]
     elif args.course_content_only:
         scripts = [database_dir / "13_noi_dung_khoa_hoc.sql"]
+    elif args.free_courses_only:
+        scripts = [database_dir / "09_mien_phi.sql"]
     else:
         scripts = sorted(database_dir.glob("[0-9]*.sql"))
         from dotenv import load_dotenv

@@ -30,7 +30,7 @@
       {% if 'ADMIN' in request.actor.roles %}
       <div class="nav-divider"></div>
       <a class="{% if section == 'users' %}active{% endif %}" href="{% url 'users' %}"><span aria-hidden="true">♙</span>Người dùng</a>
-      <a class="{% if section == 'finance' %}active{% endif %}" href="{% url 'finance' %}"><span aria-hidden="true">₫</span>Học phí &amp; chứng chỉ</a>
+      <a class="{% if section == 'certificates' %}active{% endif %}" href="{% url 'certificates' %}"><span aria-hidden="true">◇</span>Chứng chỉ</a>
       <a class="{% if section == 'audit' %}active{% endif %}" href="{% url 'audit' %}"><span aria-hidden="true">◷</span>Nhật ký hệ thống</a>
       {% endif %}
     </nav>

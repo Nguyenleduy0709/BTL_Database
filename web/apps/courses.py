@@ -4,7 +4,7 @@ from django.views.decorators.http import require_GET, require_http_methods
 
 from core.auth import ADMIN, STUDENT, role_required
 from core.db import execute, fetch_all
-from .ui import STATUS, area, enum, form_page, link, money, options, require_row, select, text
+from .ui import STATUS, area, enum, form_page, link, options, require_row, select, text
 
 LEVELS = ("CO_BAN", "TRUNG_CAP", "NANG_CAO")
 
@@ -86,7 +86,7 @@ def curriculum(course_id, registration_id=None):
 def course_detail(request, course_id):
     course = visible_course(request, course_id)
     groups = fetch_all("""
-        SELECT l.ma_lop, l.ma_code, l.ngay_bat_dau, l.ngay_ket_thuc, l.giang_vien_chinh, l.hoc_phi,
+        SELECT l.ma_lop, l.ma_code, l.ngay_bat_dau, l.ngay_ket_thuc, l.giang_vien_chinh,
                GREATEST(CAST(l.si_so_toi_da AS SIGNED) - l.si_so_hien_tai, 0) AS so_cho_con,
                dk.ma_dang_ky
         FROM v_lop_hoc l LEFT JOIN DangKyLop dk
@@ -99,8 +99,6 @@ def course_detail(request, course_id):
     enrolled = [group for group in groups if group["ma_dang_ky"]]
     group = enrolled[0] if enrolled else None
     open_groups = [item for item in groups if not item["ma_dang_ky"]]
-    for item in open_groups:
-        item["fee"] = money(item["hoc_phi"]) if item["hoc_phi"] else "Miễn phí"
     chapters = curriculum(course_id, group["ma_dang_ky"] if group else None)
     lessons = [lesson for chapter in chapters for lesson in chapter["lessons"]]
     completed = sum(lesson["thoi_diem_hoan_thanh"] is not None for lesson in lessons)

@@ -1,6 +1,6 @@
 from django.urls import path
 
-from apps import account_flows, accounts, classes, courses, dashboard, exercises, finance, lessons, reports, submissions
+from apps import account_flows, accounts, classes, courses, dashboard, enrollments, exercises, lessons, reports, submissions
 from core.email_otp import REGISTER, RESET
 
 urlpatterns = [
@@ -55,10 +55,9 @@ urlpatterns = [
     path("lan-nop/<int:submission_id>/ket-qua/", submissions.submission, name="submission"),
     path("lan-nop/<int:submission_id>/cham/", submissions.grade, name="grade"),
     path("lan-nop/<int:submission_id>/nhan-xet/", submissions.comment, name="comment"),
-    path("toi/tien-do/", finance.my_progress, name="progress"),
-    path("toi/<int:registration_id>/thanh-toan/", finance.payment, name="payment"),
-    path("toi/<int:registration_id>/danh-gia/", finance.review, name="review"),
-    path("hoc-phi/", finance.finance, name="finance"),
-    path("hoc-phi/<int:registration_id>/cap-chung-chi/", finance.certificate, name="certificate"),
-    path("nhat-ky/", finance.audit, name="audit"),
+    path("toi/tien-do/", enrollments.my_progress, name="progress"),
+    path("toi/<int:registration_id>/danh-gia/", enrollments.review, name="review"),
+    path("chung-chi/", enrollments.certificates, name="certificates"),
+    path("chung-chi/<int:registration_id>/cap/", enrollments.certificate, name="certificate"),
+    path("nhat-ky/", enrollments.audit, name="audit"),
 ]

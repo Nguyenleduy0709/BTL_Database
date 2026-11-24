@@ -3,7 +3,7 @@
 {% block head %}<link rel="stylesheet" href="{% static 'learning.css' %}">{% endblock %}
 {% block content %}
 <header class="learning-hero catalog-hero">
-  <div><h1>Khóa học</h1><p>Khám phá nội dung, học thử một bài hoặc tiếp tục khóa bạn đã đăng ký.</p></div>
+  <div><h1>Khóa học</h1><p>Khám phá các khóa học miễn phí, học thử một bài hoặc tiếp tục khóa bạn đã đăng ký.</p></div>
   {% if can_edit %}<a class="button button-secondary" href="{% url 'new_course' %}">Tạo khóa học</a>{% endif %}
 </header>
 <form method="get" class="catalog-filter" aria-label="Lọc khóa học">

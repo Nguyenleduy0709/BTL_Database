@@ -159,37 +159,6 @@ BEGIN
     END IF;
 END$$
 
-CREATE PROCEDURE sp_kiem_tra_thanh_toan(
-    IN p_dk INT, IN p_loai_tru INT, IN p_tien DECIMAL(12,0), IN p_tt VARCHAR(20)
-)
-READS SQL DATA
-BEGIN
-    DECLARE v_hoc_phi DECIMAL(12,0);
-    DECLARE v_dk_tt VARCHAR(20);
-    DECLARE v_da_dong DECIMAL(18,0);
-    SELECT l.hoc_phi, dk.trang_thai INTO v_hoc_phi, v_dk_tt
-    FROM DangKyLop dk JOIN LopHoc l USING (ma_lop) WHERE dk.ma_dang_ky = p_dk FOR UPDATE;
-    IF v_hoc_phi IS NULL OR (v_dk_tt = 'DA_HUY' AND p_tt = 'THANH_CONG') THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Đăng ký không hợp lệ để ghi thanh toán';
-    END IF;
-    SELECT COALESCE(SUM(so_tien), 0) INTO v_da_dong FROM ThanhToan
-    WHERE ma_dang_ky = p_dk AND trang_thai = 'THANH_CONG' AND (p_loai_tru IS NULL OR ma_thanh_toan <> p_loai_tru);
-    IF p_tt = 'THANH_CONG' AND v_da_dong + p_tien > v_hoc_phi THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Tổng thanh toán vượt học phí';
-    END IF;
-END$$
-
-CREATE TRIGGER trg_thanhtoan_bi BEFORE INSERT ON ThanhToan FOR EACH ROW
-CALL sp_kiem_tra_thanh_toan(NEW.ma_dang_ky, NULL, NEW.so_tien, NEW.trang_thai)$$
-
-CREATE TRIGGER trg_thanhtoan_bu BEFORE UPDATE ON ThanhToan FOR EACH ROW
-BEGIN
-    IF NEW.ma_dang_ky <> OLD.ma_dang_ky THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Không được chuyển giao dịch sang đăng ký khác';
-    END IF;
-    CALL sp_kiem_tra_thanh_toan(NEW.ma_dang_ky, OLD.ma_thanh_toan, NEW.so_tien, NEW.trang_thai);
-END$$
-
 CREATE TRIGGER trg_danhgia_bi BEFORE INSERT ON DanhGiaLopHoc FOR EACH ROW
 BEGIN
     IF NOT EXISTS (
@@ -270,24 +239,6 @@ CREATE TRIGGER trg_audit_dangky_d AFTER DELETE ON DangKyLop FOR EACH ROW
 INSERT INTO NhatKyHeThong(ten_bang, hanh_dong, khoa_ban_ghi, du_lieu_cu, du_lieu_moi, ma_nguoi_thuc_hien)
 VALUES ('DangKyLop', 'DELETE', OLD.ma_dang_ky,
         JSON_OBJECT('ma_lop', OLD.ma_lop, 'ma_hoc_vien', OLD.ma_hoc_vien, 'trang_thai', OLD.trang_thai),
-        NULL, @app_user_id)$$
-
-CREATE TRIGGER trg_audit_thanhtoan_i AFTER INSERT ON ThanhToan FOR EACH ROW
-INSERT INTO NhatKyHeThong(ten_bang, hanh_dong, khoa_ban_ghi, du_lieu_cu, du_lieu_moi, ma_nguoi_thuc_hien)
-VALUES ('ThanhToan', 'INSERT', NEW.ma_thanh_toan,
-        NULL,
-        JSON_OBJECT('ma_dang_ky', NEW.ma_dang_ky, 'so_tien', NEW.so_tien, 'trang_thai', NEW.trang_thai), @app_user_id)$$
-
-CREATE TRIGGER trg_audit_thanhtoan_u AFTER UPDATE ON ThanhToan FOR EACH ROW
-INSERT INTO NhatKyHeThong(ten_bang, hanh_dong, khoa_ban_ghi, du_lieu_cu, du_lieu_moi, ma_nguoi_thuc_hien)
-VALUES ('ThanhToan', 'UPDATE', NEW.ma_thanh_toan,
-        JSON_OBJECT('ma_dang_ky', OLD.ma_dang_ky, 'so_tien', OLD.so_tien, 'trang_thai', OLD.trang_thai),
-        JSON_OBJECT('ma_dang_ky', NEW.ma_dang_ky, 'so_tien', NEW.so_tien, 'trang_thai', NEW.trang_thai), @app_user_id)$$
-
-CREATE TRIGGER trg_audit_thanhtoan_d AFTER DELETE ON ThanhToan FOR EACH ROW
-INSERT INTO NhatKyHeThong(ten_bang, hanh_dong, khoa_ban_ghi, du_lieu_cu, du_lieu_moi, ma_nguoi_thuc_hien)
-VALUES ('ThanhToan', 'DELETE', OLD.ma_thanh_toan,
-        JSON_OBJECT('ma_dang_ky', OLD.ma_dang_ky, 'so_tien', OLD.so_tien, 'trang_thai', OLD.trang_thai),
         NULL, @app_user_id)$$
 
 CREATE TRIGGER trg_audit_giaobai_i AFTER INSERT ON GiaoBai FOR EACH ROW

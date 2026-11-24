@@ -23,10 +23,11 @@ def main():
         raise SystemExit("Cần đặt CODELAB_DEMO_PASSWORD trong .env để kiểm thử tài khoản mẫu.")
     urls = {
         "admin": ["/", "/lop/1/", "/khoa-hoc/1/", "/giao-bai/1/thong-ke/", "/lop/1/bang-diem/",
-                  "/nhat-ky/", "/hoc-phi/", "/nguoi-dung/", "/bai-tap/1/"],
+                  "/nhat-ky/", "/chung-chi/", "/chung-chi/1/cap/", "/lop/tao/", "/lop/1/sua/",
+                  "/nguoi-dung/", "/bai-tap/1/"],
         "giangvien": ["/", "/lop/1/giao-bai/", "/buoi/1/diem-danh/", "/cho-cham/", "/lan-nop/3/ket-qua/"],
         "an": ["/", "/lop/1/", "/lop/1/bai-hoc/3/", "/giao-bai/1/nop/", "/lan-nop/2/ket-qua/",
-               "/toi/tien-do/", "/toi/1/thanh-toan/", "/khoa-hoc/", "/khoa-hoc/1/", "/khoa-hoc/2/"],
+               "/toi/tien-do/", "/lop/", "/khoa-hoc/", "/khoa-hoc/1/", "/khoa-hoc/2/"],
     }
     with override_settings(ALLOWED_HOSTS=["testserver"], DEBUG=False):
         for user, pages in urls.items():
@@ -36,17 +37,23 @@ def main():
                 response = client.get(url)
                 assert response.status_code == 200, (user, url, response.status_code)
                 assert b'id="sql-panel"' not in response.content and b'/sql-lab/' not in response.content, (user, url)
+                assert b'/thanh-toan/' not in response.content and b'/hoc-phi/' not in response.content, (user, url)
+                if url in ("/lop/tao/", "/lop/1/sua/"):
+                    assert b'name="hoc_phi"' not in response.content, url
             if user == "an":
-                for url in ("/nguoi-dung/", "/lan-nop/3/ket-qua/"):
+                for url in ("/nguoi-dung/", "/chung-chi/", "/lan-nop/3/ket-qua/"):
                     assert client.get(url).status_code == 403, url
                 class_page = client.get("/lop/1/")
                 assert b'href="/lop/1/bai-hoc/3/"' in class_page.content
                 assert b'href="/lop/1/giao-bai/"' not in class_page.content
+                assert "Miễn phí" in class_page.content.decode()
+                assert client.post("/toi/1/thanh-toan/", {}).status_code == 404
                 check_learning(client, demo_password)
             if user == "giangvien":
                 assert b'href="/lop/1/giao-bai/"' in client.get("/lop/1/").content
                 assert client.get("/lop/2/").status_code == 403
             assert client.get("/sql-lab/Q07/run/").status_code == 404
+            assert client.get("/hoc-phi/").status_code == 404
             print(f"{user}: {len(pages)} trang đạt")
         check_queries()
     print("Danh mục khóa học, học thử, tiến độ, phân quyền web, 35 truy vấn và 35 EXPLAIN đạt.")
@@ -58,6 +65,7 @@ def check_learning(student, demo_password):
     assert catalog.status_code == 200 and "SQL thực hành" in catalog.content.decode()
     assert "Python cơ bản" not in catalog.content.decode()
     assert guest.get("/khoa-hoc/2/").status_code == 200
+    assert "Miễn phí" in guest.get("/khoa-hoc/2/").content.decode()
     for course_id, lesson_id in ((1, 1), (2, 5)):
         preview = guest.get(f"/khoa-hoc/{course_id}/hoc-thu/{lesson_id}/")
         assert preview.status_code == 200 and b"<pre" in preview.content
@@ -89,7 +97,7 @@ def check_queries():
             except DatabaseError as error:
                 raise AssertionError(f"{path.stem} {prefix}: {error}") from error
     for blocked in (
-        "UPDATE LopHoc SET hoc_phi = hoc_phi WHERE 1 = 0",
+        "UPDATE LopHoc SET si_so_toi_da = si_so_toi_da WHERE 1 = 0",
         "SELECT mat_khau_hash FROM NguoiDung WHERE 1 = 0",
         "SELECT ma_nguon FROM LanNop WHERE 1 = 0",
     ):

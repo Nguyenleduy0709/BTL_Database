@@ -117,13 +117,15 @@ BEGIN
     DELETE FROM BaiTap WHERE ma_bai_tap = v_moi;
     COMMIT;
 
+    START TRANSACTION;
     SET v_loi = FALSE;
     BEGIN
-        DECLARE CONTINUE HANDLER FOR SQLSTATE '45000' SET v_loi = TRUE;
-        CALL sp_thanh_toan(1, 1, 'TIEN_MAT', NULL);
+        DECLARE CONTINUE HANDLER FOR 3819 SET v_loi = TRUE;
+        UPDATE LopHoc SET hoc_phi = 1 WHERE ma_lop = 1;
     END;
-    CALL sp_test_btl_khang_dinh(v_loi AND (SELECT con_no = 0 FROM v_cong_no_hoc_phi WHERE ma_dang_ky = 1),
-                            'Chặn tổng thanh toán vượt học phí');
+    ROLLBACK;
+    CALL sp_test_btl_khang_dinh(v_loi AND NOT EXISTS (SELECT 1 FROM LopHoc WHERE hoc_phi <> 0),
+                            'Mọi lớp đều miễn phí, MySQL chặn mức học phí khác 0');
 
     SET v_loi = FALSE;
     BEGIN

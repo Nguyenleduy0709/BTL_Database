@@ -78,6 +78,7 @@ CREATE TABLE LopHoc (
     ngay_bat_dau DATE NOT NULL,
     ngay_ket_thuc DATE NOT NULL,
     si_so_toi_da SMALLINT UNSIGNED NOT NULL CHECK (si_so_toi_da > 0),
+    -- Cột tương thích với dữ liệu cũ, được cố định ở 0 theo 09_mien_phi.sql.
     hoc_phi DECIMAL(12,0) NOT NULL DEFAULT 0 CHECK (hoc_phi >= 0),
     trang_thai ENUM('MO_DANG_KY','DANG_HOC','KET_THUC','HUY') NOT NULL DEFAULT 'MO_DANG_KY',
     CHECK (ngay_ket_thuc >= ngay_bat_dau),
@@ -153,6 +154,7 @@ CREATE TABLE ThongBaoLop (
     FOREIGN KEY (ma_nguoi_dang) REFERENCES NguoiDung(ma_nguoi_dung)
 ) ENGINE=InnoDB;
 
+-- Bảng lưu trữ giao dịch từ các bản cài cũ.
 CREATE TABLE ThanhToan (
     ma_thanh_toan INT PRIMARY KEY AUTO_INCREMENT,
     ma_dang_ky INT NOT NULL,

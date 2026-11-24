@@ -47,42 +47,6 @@ BEGIN
     COMMIT;
 END$$
 
-CREATE PROCEDURE sp_tao_lop(
-    IN p_code VARCHAR(20), IN p_khoa INT, IN p_bat_dau DATE, IN p_ket_thuc DATE,
-    IN p_max INT, IN p_phi DECIMAL(12,0), IN p_gv INT, OUT p_lop INT
-)
-BEGIN
-    DECLARE EXIT HANDLER FOR SQLEXCEPTION BEGIN ROLLBACK; RESIGNAL; END;
-    START TRANSACTION;
-    INSERT INTO LopHoc(ma_code, ma_khoa_hoc, ngay_bat_dau, ngay_ket_thuc, si_so_toi_da, hoc_phi)
-    VALUES (p_code, p_khoa, p_bat_dau, p_ket_thuc, p_max, p_phi);
-    SET p_lop = LAST_INSERT_ID();
-    INSERT INTO PhanCongGiangDay(ma_lop, ma_giang_vien, vai_tro_day) VALUES (p_lop, p_gv, 'CHINH');
-    COMMIT;
-END$$
-
-CREATE PROCEDURE sp_sua_lop(
-    IN p_lop INT, IN p_code VARCHAR(20), IN p_bat_dau DATE, IN p_ket_thuc DATE,
-    IN p_max INT, IN p_phi DECIMAL(12,0), IN p_tt VARCHAR(20)
-)
-BEGIN
-    DECLARE v_lop INT;
-    DECLARE EXIT HANDLER FOR SQLEXCEPTION BEGIN ROLLBACK; RESIGNAL; END;
-    START TRANSACTION;
-    SELECT ma_lop INTO v_lop FROM LopHoc WHERE ma_lop = p_lop FOR UPDATE;
-    IF v_lop IS NULL OR p_max < fn_si_so_hien_tai(v_lop) THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Lớp không tồn tại hoặc sĩ số mới thấp hơn số đã đăng ký';
-    END IF;
-    IF EXISTS (SELECT 1 FROM DangKyLop dk JOIN ThanhToan t USING (ma_dang_ky)
-               WHERE dk.ma_lop = p_lop AND t.trang_thai = 'THANH_CONG'
-               GROUP BY dk.ma_dang_ky HAVING SUM(t.so_tien) > p_phi) THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Học phí mới thấp hơn số tiền đã thu';
-    END IF;
-    UPDATE LopHoc SET ma_code = p_code, ngay_bat_dau = p_bat_dau, ngay_ket_thuc = p_ket_thuc,
-        si_so_toi_da = p_max, hoc_phi = p_phi, trang_thai = p_tt WHERE ma_lop = p_lop;
-    COMMIT;
-END$$
-
 CREATE PROCEDURE sp_phan_cong_giang_vien(IN p_lop INT, IN p_gv INT, IN p_vai_tro VARCHAR(20))
 BEGIN
     DECLARE v_lop INT;
@@ -203,11 +167,6 @@ BEGIN
     SELECT p_moi, thu_tu, mo_ta, du_lieu_vao, ket_qua_mong_doi, trong_so, la_test_mau
     FROM TestCase WHERE ma_bai_tap = p_bai_tap;
     COMMIT;
-END$$
-
-CREATE PROCEDURE sp_thanh_toan(IN p_dk INT, IN p_tien DECIMAL(12,0), IN p_pt VARCHAR(20), IN p_mgd VARCHAR(64))
-BEGIN
-    INSERT INTO ThanhToan(ma_dang_ky, so_tien, phuong_thuc, ma_giao_dich) VALUES (p_dk, p_tien, p_pt, p_mgd);
 END$$
 
 CREATE PROCEDURE sp_cap_chung_chi(IN p_ma_dk INT)
